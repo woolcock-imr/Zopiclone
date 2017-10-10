@@ -1,0 +1,118 @@
+<section>
+    <div id=toolbar__ID>
+        <a id=back__ID>Back</a> <span id=ns__ID><a id=new__ID>New</a> <a id=save__ID>Save</a></span><span class=tab__ID></span><input placeholder='filter' id=keyword__ID type=text /> <a id=query__ID>Load</a>
+        <span id=multi__ID>
+            <span class=tab__ID></span>Page Size: <select id=page_size__ID><option>30</option><option>50</option><option>100</option><option>200</option></select><span class=tab__ID></span>
+            <span id=I__ID style="display:none">0</span><span id=A__ID></span>
+            <img id=p__ID src="__BASE__/vmiis/Common-Code/image/p.png" ><img id=n__ID src="__BASE__/vmiis/Common-Code/image/n.png" >
+            <span class=tab__ID></span>Start page: <input id=start__ID type=text style="width:45px" />
+            Number of page: <input id=num__ID type=text  style="width:45px" />
+            <a id=export__ID>Export</a>
+            <span class=tab__ID></span><span class=tab__ID></span><span class=tab__ID></span>
+            <a id=meddra_search__ID>MEDDRA Search</a>
+        </span>
+        <span id=elapsed__ID style='float:right'></span>
+    </div>
+    <div id=table__ID>
+        <table id=grid__ID></table>
+    </div>
+</section>
+<script>
+    function F__ID(){
+        //-------------------------------------
+        VmInclude:__PARTS__/grid/grid.js
+        VmInclude:__CURRENT_PATH__../task.js
+        //-------------------------------------
+        _task_fields="AE_During_Study,AE_number,AE_Dx,_Paste,LLT_ID,LLT_Name,PT_ID,PT_Name,SOC_ID,SOC_Name,Onset_Date,Onset_Time,Resolution_Date,Resolution_Time,Serious,Intensity,Frequency,Relationship_Drug,Tx_required,Tx_required_Comments,Treatment,Outcome";
+        _fields="_Form,Participant,"+_task_fields;
+        _fields+=",Submit Date|DateTime,Submitted by|Author,_Delete,_Hidden|Participant_uid";
+        _grid_to_form_parameters={task_fields:_task_fields};
+        //-------------------------------------
+        $('#D__ID').on('load',function(){  _set_req(); _request_data(); })
+        $('#D__ID').on('back',function(){  _set_req(); _request_data(); })
+        //-------------------------------------
+        _cell_render=function(records,I,field,td,set_value,source){
+            _default_cell_render(records,I,field,td,set_value,source);
+            switch(field){
+                case '_Paste':
+                    records[I].vm_custom[field]=true;
+                    td.html("<u style='cursor:pointer'>Paste</u>");
+                    td.find('u').on('click',function(){
+                        var v=$vm.meddra_selected_value;
+                        if(v!=undefined){
+                            var items=v.split('|');
+                            if(items.length>=6 && records[I].LLT_ID!=items[0]){
+                                _set_value(items[0],records,I,'LLT_ID');
+                                records[I].LLT_ID=items[0];
+                                records[I].LLT_Name=items[1];
+                                records[I].PT_ID=items[2];
+                                records[I].PT_Name=items[3];
+                                records[I].SOC_ID=items[4];
+                                records[I].SOC_Name=items[5];
+                                _render(I);
+                            }
+                        }
+                    });
+                break;
+                case 'LLT_ID':
+                case 'LLT_Name':
+                case 'PT_ID':
+                case 'PT_Name':
+                case 'SOC_ID':
+                case 'SOC_Name':
+                    records[I].vm_readonly[field]=true;
+                    break;
+                case 'Serious':
+                case 'AE_During_Study':
+                    var html="<select style='border:0;''>\
+                    <option value='Y' >Yes</option>\
+                    <option value='N' >No</option>\
+                    </select>\
+                    ";
+                    VmInclude:__BASE__/vmiis/Common-Code/grid/field_select.js
+                break;
+                case 'Intensity':
+                    var html="<select style='border:0;''>\
+                    <option value='Mild' >Mild</option>\
+                    <option value='Mod' >Moderate</option>\
+                    <option value='Severe' >Severe</option>\
+                    </select>\
+                    ";
+                    VmInclude:__BASE__/vmiis/Common-Code/grid/field_select.js
+                break;
+                case 'Frequency':
+                    var html="<select style='border:0;''>\
+                            <option>Single continuous episode</option>\
+                            <option>Intermittent</option>\
+                            </select>\
+                    ";
+                    VmInclude:__BASE__/vmiis/Common-Code/grid/field_select.js
+                break;
+                case 'Resolution_Date':
+                case 'Onset_Date':
+                    VmInclude:__BASE__/vmiis/Common-Code/grid/field_date.js
+                break;
+                case 'AE_During_Study':
+                    td.html('<input type=checkbox />');
+                    VmInclude:__BASE__/vmiis/Common-Code/grid/field_checkbox.js
+                break;
+                case 'Onset_Time':
+                case 'Resolution_Time':
+                    VmInclude:__BASE__/vmiis/Common-Code/grid/field_time.js
+                break;
+            }
+        }
+        //-------------------------------------
+        _before_submit=function(record,dbv){
+            return _set_status_and_participant(record,dbv);
+        }
+        //-------------------------------------
+        $('#meddra_search__ID').on('click',function(){
+            $vm.load_module_by_name(_app_id+'meddra_search',$vm.root_layout_content_slot,{})
+        })
+        //-------------------------------------
+    }
+</script>
+<style>
+    VmInclude:__BASE__/vmiis/Common-Code/grid/grid.css
+</style>
